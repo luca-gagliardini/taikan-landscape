@@ -117,8 +117,12 @@ export class Cloud {
           alpha = washoutFalloff * washoutFalloff * edgeNoise * 0.6
         }
 
-        if (alpha > 0.02) {
-          drawSoftCircle(ctx, worldX, worldY, alpha, SOFT_CIRCLE_RADIUS)
+        // Boost overall cloud opacity to increase "covering power" over mountain ink
+        // This helps the cloud wash away mountain edges more effectively
+        const boostedAlpha = Math.min(1.0, alpha * 2.5)
+
+        if (boostedAlpha > 0.02) {
+          drawSoftCircle(ctx, worldX, worldY, boostedAlpha, SOFT_CIRCLE_RADIUS)
         }
       }
     }
