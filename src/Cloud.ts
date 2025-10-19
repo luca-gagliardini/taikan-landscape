@@ -40,8 +40,14 @@ export class Cloud {
   }
 
   update(deltaTime: number, windSpeed: number, canvasWidth: number): void {
-    // For Phase 2, cloud is static - no movement yet
-    // This will be implemented in Phase 4
+    // Move horizontally based on velocity and global wind speed
+    this.position.x += this.velocity.x * windSpeed * deltaTime
+
+    // Wrap cloud when it exits right side of canvas
+    const buffer = 200
+    if (this.position.x > canvasWidth + buffer) {
+      this.position.x = -this.width - buffer
+    }
   }
 
   draw(ctx: CanvasRenderingContext2D, time: number): void {

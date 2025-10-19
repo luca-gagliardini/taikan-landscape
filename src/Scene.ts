@@ -1,12 +1,13 @@
 import { Mountain } from './Mountain'
 import { Cloud } from './Cloud'
-import { BACKGROUND_COLOR, CANVAS_WIDTH, CANVAS_HEIGHT, NOISE_SCALE } from './config'
+import { BACKGROUND_COLOR, CANVAS_WIDTH, CANVAS_HEIGHT, NOISE_SCALE, DEFAULT_WIND_SPEED } from './config'
 
 export class Scene {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   mountain: Mountain
   clouds: Cloud[]
+  windSpeed: number
   currentTime: number
   lastTime: number
 
@@ -21,6 +22,7 @@ export class Scene {
     }
     this.ctx = ctx
 
+    this.windSpeed = DEFAULT_WIND_SPEED
     this.currentTime = 0
     this.lastTime = 0
 
@@ -33,16 +35,40 @@ export class Scene {
       { x: 0.2, y: 1.01 }   // bottom-left (extends below canvas)
     ])
 
-    // Initialize with one static cloud overlapping the mountain
-    // Phase 2: Cloud is static (no movement) for aesthetic tuning
+    // Initialize clouds
+    // Phase 4: Clouds move horizontally with wind
+
+    // Static eternal cloud at bottom
+    // Positioned so cloud center Y = canvas bottom (100% height)
+    // Cloud center X = canvas center (50% width)
+    const eternalCloudWidth = this.canvas.width * 1.5 // 1.5x canvas width for good coverage
+    const eternalCloudHeight = this.canvas.width * 0.25 // Height relative to canvas width (increased for thicker cloud)
+
+    // Position is top-left corner of cloud bounding box
+    // To center cloud horizontally: x = canvasCenter - cloudWidth/2
+    // To position cloud center at bottom: y = canvasHeight - cloudHeight/2
+    const eternalCloudX = this.canvas.width * 0.5 - eternalCloudWidth / 2
+    const eternalCloudY = this.canvas.height - eternalCloudHeight / 2
+
     this.clouds = [
+      // Static eternal cloud at bottom
       new Cloud({
-        position: { x: 50, y: 140 }, // Adjusted x for wider cloud
-        velocity: { x: 0, y: 0 }, // No movement in Phase 2
-        width: 960,  // 20% longer (800 * 1.2)
-        height: 192, // 20% thinner (240 * 0.8)
+        position: { x: eternalCloudX, y: eternalCloudY },
+        velocity: { x: 0, y: 0 }, // No movement - static cloud
+        width: eternalCloudWidth,
+        height: eternalCloudHeight,
         scale: 1.0,
         noiseSeed: { x: 0, y: 0, z: 0 },
+        noiseScale: NOISE_SCALE
+      }),
+      // Regular cloud with random Y position
+      new Cloud({
+        position: { x: -1000, y: Math.random() * this.canvas.height },
+        velocity: { x: 1, y: 0 },
+        width: 960,
+        height: 192,
+        scale: 1.0,
+        noiseSeed: { x: 100, y: 100, z: 50 },
         noiseScale: NOISE_SCALE
       })
     ]
@@ -54,8 +80,10 @@ export class Scene {
   }
 
   update(deltaTime: number): void {
-    // For Phase 1, we don't have any animations yet
-    // This will be used in later phases for cloud movement
+    // Update all clouds with wind speed and canvas width for wrapping
+    for (const cloud of this.clouds) {
+      cloud.update(deltaTime, this.windSpeed, this.canvas.width)
+    }
   }
 
   render(): void {
