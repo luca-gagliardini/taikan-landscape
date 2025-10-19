@@ -12,45 +12,43 @@ export interface CloudConfig {
   velocity: Vector2
   width: number
   height: number
-  scale: number
   noiseSeed: Vector3
   noiseScale?: number
-  timeOffset?: number
 }
 
 export class Cloud {
   position: Vector2
   velocity: Vector2
-  scale: number
   width: number
   height: number
   noiseSeed: Vector3
   noiseScale: number
-  timeOffset: number
 
   constructor(config: CloudConfig) {
     this.position = config.position
     this.velocity = config.velocity
     this.width = config.width
     this.height = config.height
-    this.scale = config.scale
     this.noiseSeed = config.noiseSeed
     this.noiseScale = config.noiseScale ?? NOISE_SCALE
-    this.timeOffset = config.timeOffset ?? 0
   }
 
-  update(deltaTime: number, windSpeed: number, canvasWidth: number): void {
+  update(deltaTime: number, windSpeed: number, canvasWidth: number, canvasHeight: number): void {
     // Move horizontally based on velocity and global wind speed
     this.position.x += this.velocity.x * windSpeed * deltaTime
 
     // Wrap cloud when it exits right side of canvas
-    const buffer = 200
+    const buffer = canvasWidth * 0.25 // 25% of canvas width
     if (this.position.x > canvasWidth + buffer) {
-      this.position.x = -this.width - buffer
+      // Randomize cloud properties to create illusion of new cloud (all relative to canvas)
+      this.width = canvasWidth * (0.75 + Math.random())     // 75% to 175% of canvas width
+      this.height = canvasHeight * (0.133 + Math.random() * 0.2)  // 13.3% to 33.3% of canvas height
+      this.position.y = Math.random() * canvasHeight        // Random Y position
+      this.position.x = -this.width - canvasWidth * 0.125   // Position off-screen (12.5% canvas width buffer)
     }
   }
 
-  draw(ctx: CanvasRenderingContext2D, time: number): void {
+  draw(ctx: CanvasRenderingContext2D, time: number, canvasWidth: number): void {
     // Cloud center is at the middle of the bounding box
     const centerX = this.position.x + this.width / 2
     const centerY = this.position.y + this.height / 2
@@ -69,8 +67,9 @@ export class Cloud {
     const transitionEnd = 0.70  // Reduced from 0.75
 
     // Sample noise on a grid over cloud's bounding region
-    for (let x = 0; x < this.width; x += CLOUD_SAMPLE_STEP) {
-      for (let y = 0; y < this.height; y += CLOUD_SAMPLE_STEP) {
+    const sampleStep = CLOUD_SAMPLE_STEP * canvasWidth
+    for (let x = 0; x < this.width; x += sampleStep) {
+      for (let y = 0; y < this.height; y += sampleStep) {
         const worldX = this.position.x + x
         const worldY = this.position.y + y
 
@@ -122,7 +121,8 @@ export class Cloud {
         const boostedAlpha = Math.min(1.0, alpha * 2.5)
 
         if (boostedAlpha > 0.02) {
-          drawSoftCircle(ctx, worldX, worldY, boostedAlpha, SOFT_CIRCLE_RADIUS)
+          const softCircleRadius = SOFT_CIRCLE_RADIUS * canvasWidth
+          drawSoftCircle(ctx, worldX, worldY, boostedAlpha, softCircleRadius)
         }
       }
     }

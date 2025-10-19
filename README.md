@@ -77,24 +77,25 @@ src/
 - [x] Implement Mountain class with trapezoid rendering
 - [x] Render static black mountain on beige background
 
-### Phase 2: Single Static Cloud (Next)
-- [ ] Install simplex-noise library
-- [ ] Implement Cloud class with noise-based alpha calculation
-- [ ] Add cloud rendering using destination-out composite mode
-- [ ] Create one cloud overlapping mountain for tuning
+### Phase 2: Single Static Cloud ✅
+- [x] Install simplex-noise library
+- [x] Implement Cloud class with noise-based alpha calculation
+- [x] Add cloud rendering using source-over composite mode
+- [x] Create one cloud overlapping mountain for tuning
 
-### Phase 3: Cloud Evolution
-- [ ] Add time parameter to noise function
-- [ ] Implement morphing in place (no movement)
+### Phase 3 & 4: Cloud Evolution and Movement ✅
+- [x] Add time parameter to noise function (3D noise)
+- [x] Implement cloud morphing with smooth evolution
+- [x] Implement Cloud.update() with horizontal movement
+- [x] Add wrapping logic with property randomization
+- [x] Connect to global windSpeed parameter
 
-### Phase 4: Horizontal Movement
-- [ ] Implement Cloud.update() with horizontal movement
-- [ ] Add wrapping logic
-- [ ] Connect to global windSpeed parameter
-
-### Phase 5: Multiple Clouds
-- [ ] Add additional clouds with different seeds/speeds
-- [ ] Tune composition and interaction
+### Phase 5: Multiple Clouds ✅
+- [x] Add 5 moving clouds with randomized properties
+- [x] Refactor cloud initialization into helper method
+- [x] Implement canvas-relative positioning for all dimensions
+- [x] Add debug mode for cloud visualization
+- [x] Clean up unused code
 
 ### Phase 6: Polish & Controls (Optional)
 - [ ] Wind speed slider UI
@@ -108,21 +109,22 @@ Key parameters that can be adjusted in `src/config.ts`:
 
 | Parameter | Description | Default Value |
 |-----------|-------------|---------------|
-| `DEFAULT_WIND_SPEED` | Cloud drift speed (px/s) | 20 |
-| `NOISE_SCALE` | Size of cloud features (lower = bigger) | 100 |
-| `NOISE_TIME_SCALE` | Speed of shape morphing | 0.0005 |
-| `CLOUD_THRESHOLD` | Cloud density/coverage (0-1) | 0.4 |
-| `CLOUD_SAMPLE_STEP` | Detail level (lower = more detail) | 8 |
-| `SOFT_CIRCLE_RADIUS` | Edge softness | 20 |
+| `DEFAULT_WIND_SPEED` | Cloud drift speed (fraction of canvas width/sec) | 0.019 |
+| `NOISE_SCALE` | Size of cloud features (lower = bigger) | 60 |
+| `NOISE_TIME_SCALE` | Speed of shape morphing | 0.00004 |
+| `CLOUD_SAMPLE_STEP` | Grid spacing (fraction of canvas width) | 0.007 |
+| `SOFT_CIRCLE_RADIUS` | Soft circle radius (fraction of canvas width) | 0.019 |
+| `DEBUG_CLOUD_COLOR` | Cloud color for debugging (null = normal mode) | null |
 
 ## Technical Notes
 
 ### Canvas Composite Operations
 
-The key technique is using `destination-out` composite mode for cloud rendering:
-- This mode removes (erases) pixels from what's already drawn
-- Perfect for clouds that "wash away" the ink
-- Cloud alpha determines how much to erase
+The key technique is using `source-over` composite mode with background-colored clouds:
+- Clouds are rendered as background-colored shapes painted over the mountain
+- Creates a "diluted ink" wash effect characteristic of Japanese ink painting
+- Cloud alpha determines the strength of the wash effect
+- Four-zone density system creates organic cloud shapes (core, noise blend, transition, washout edge)
 
 ### 3D Noise for Organic Shapes
 

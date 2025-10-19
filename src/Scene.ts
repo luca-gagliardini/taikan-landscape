@@ -22,7 +22,7 @@ export class Scene {
     }
     this.ctx = ctx
 
-    this.windSpeed = DEFAULT_WIND_SPEED
+    this.windSpeed = DEFAULT_WIND_SPEED * this.canvas.width
     this.currentTime = 0
     this.lastTime = 0
 
@@ -57,21 +57,33 @@ export class Scene {
         velocity: { x: 0, y: 0 }, // No movement - static cloud
         width: eternalCloudWidth,
         height: eternalCloudHeight,
-        scale: 1.0,
         noiseSeed: { x: 0, y: 0, z: 0 },
         noiseScale: NOISE_SCALE
       }),
-      // Regular cloud with random Y position
-      new Cloud({
-        position: { x: -1000, y: Math.random() * this.canvas.height },
+      // Moving clouds
+      ...this.createMovingClouds(5)
+    ]
+  }
+
+  private createMovingClouds(count: number): Cloud[] {
+    return Array.from({ length: count }, (_, i) => {
+      const seedMultiplier = (i + 1) * 100
+      return new Cloud({
+        position: {
+          x: -(this.canvas.width * 0.25) - Math.random() * (this.canvas.width * 1.875),
+          y: Math.random() * this.canvas.height
+        },
         velocity: { x: 1, y: 0 },
-        width: 960,
-        height: 192,
-        scale: 1.0,
-        noiseSeed: { x: 100, y: 100, z: 50 },
+        width: this.canvas.width * (0.75 + Math.random()),
+        height: this.canvas.height * (0.133 + Math.random() * 0.2),
+        noiseSeed: {
+          x: seedMultiplier,
+          y: seedMultiplier,
+          z: seedMultiplier / 2
+        },
         noiseScale: NOISE_SCALE
       })
-    ]
+    })
   }
 
   init(): void {
@@ -80,9 +92,9 @@ export class Scene {
   }
 
   update(deltaTime: number): void {
-    // Update all clouds with wind speed and canvas width for wrapping
+    // Update all clouds with wind speed and canvas dimensions for wrapping
     for (const cloud of this.clouds) {
-      cloud.update(deltaTime, this.windSpeed, this.canvas.width)
+      cloud.update(deltaTime, this.windSpeed, this.canvas.width, this.canvas.height)
     }
   }
 
@@ -101,7 +113,7 @@ export class Scene {
     // This "washes away" the mountain ink by painting over it with background color
     this.ctx.globalCompositeOperation = 'source-over'
     for (const cloud of this.clouds) {
-      cloud.draw(this.ctx, this.currentTime)
+      cloud.draw(this.ctx, this.currentTime, this.canvas.width)
     }
   }
 

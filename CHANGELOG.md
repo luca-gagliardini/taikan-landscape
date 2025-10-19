@@ -105,3 +105,75 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Phase 2 checkpoint complete: Static cloud with organic wash effect functional
 - Cloud aesthetic successfully captures "diluted ink" feeling
 - Ready for Phase 3: Cloud evolution (morphing in place)
+
+---
+
+### Added - Phase 3 & 4: Cloud Evolution and Movement
+- Cloud morphing already implemented in Phase 2 via time-based 3D noise
+- Implemented horizontal cloud movement with wind system
+
+#### Core Implementation
+- `src/Scene.ts`: Added global wind speed parameter
+  - `windSpeed` applied to all moving clouds
+  - Eternal static cloud at canvas bottom (immovable)
+- `src/Cloud.ts`: Cloud movement and wrapping
+  - Horizontal drift based on velocity and global wind speed
+  - Wrapping logic: clouds teleport to left when exiting right
+  - Cloud property randomization on each wrap cycle (position, size)
+  - Creates illusion of new clouds while managing memory efficiently
+
+#### Configuration Parameters
+- `DEFAULT_WIND_SPEED`: 0.019 (fraction of canvas width per second)
+- `NOISE_TIME_SCALE`: 0.00004 (halved for slower, more meditative evolution)
+
+### Notes
+- Phase 3 & 4 checkpoint complete: Clouds drift and morph organically
+- Wrapping creates endless cloud flow without memory overhead
+- Ready for Phase 5: Multiple clouds
+
+---
+
+### Added - Phase 5: Multiple Clouds
+- Implemented 5 moving clouds with varied properties
+- Refactored cloud initialization for cleaner code
+
+#### Core Implementation
+- `src/Scene.ts`:
+  - Added `createMovingClouds(count)` helper method
+  - Generates clouds with randomized positions and sizes
+  - Incremental noise seeds for visual diversity (100, 200, 300, etc.)
+  - All positioning fully relative to canvas dimensions
+- `src/Cloud.ts`:
+  - Updated wrapping to randomize cloud properties each cycle
+  - All dimensions relative to canvas (width, height, positions)
+
+#### Debug Features
+- `src/config.ts`: `DEBUG_CLOUD_COLOR` option
+  - Set to color hex (e.g., '#FF0000') to visualize clouds
+  - Set to null for normal background-color wash effect
+- `src/utils.ts`: Dynamic cloud color parsing for debug mode
+
+#### Code Quality
+- Removed unused properties: `scale`, `timeOffset` from Cloud class
+- Removed unused constant: `CLOUD_THRESHOLD` from config
+- Refactored repetitive cloud initialization into helper method
+
+#### Canvas-Relative Architecture
+- All cloud dimensions now relative to canvas size:
+  - Initial X: -(canvas.width × 0.25) to -(canvas.width × 2.125)
+  - Initial Y: random × canvas.height
+  - Width: canvas.width × (0.75 + random)
+  - Height: canvas.height × (0.133 + random × 0.2)
+  - Buffer zones: 25% and 12.5% of canvas.width
+- `src/config.ts`: All constants now canvas-relative fractions:
+  - `DEFAULT_WIND_SPEED`: 0.019 (fraction of canvas width/sec)
+  - `CLOUD_SAMPLE_STEP`: 0.007 (grid spacing fraction)
+  - `SOFT_CIRCLE_RADIUS`: 0.019 (circle radius fraction)
+- `src/Cloud.ts`: Draw method receives canvas width for scaling
+- `src/Scene.ts`: Wind speed multiplied by canvas width
+
+### Notes
+- Phase 5 checkpoint complete: Multiple clouds with organic flow
+- All positioning and rendering fully scalable to any canvas size
+- Clean codebase with no unused properties or hardcoded pixels
+- Ready for Phase 6: Polish & Controls (optional)
