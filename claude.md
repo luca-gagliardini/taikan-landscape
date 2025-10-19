@@ -16,9 +16,10 @@ The clouds are implied through negative space - where cloud exists, mountain ink
 \`\`\`
 src/
 ├── main.ts           // Entry point, canvas setup, animation loop
-├── Scene.ts          // Orchestrates mountain + clouds
+├── Scene.ts          // Orchestrates mountain + clouds + birds
 ├── Mountain.ts       // Mountain geometry and rendering
 ├── Cloud.ts          // Individual cloud behavior
+├── Bird.ts           // Individual bird behavior and flocking (Phase 7+)
 ├── types.ts          // Shared types (Point, Vector2, etc.)
 ├── config.ts         // Constants and tunable parameters
 └── utils.ts          // Noise wrapper, drawing helpers
@@ -28,10 +29,10 @@ src/
 
 #### Scene Class
 **Responsibilities:**
-- Canvas management (800x600 fixed initially)
+- Canvas management (responsive full-window from Phase 6)
 - Animation loop coordination
 - Global parameters (wind speed, time)
-- Manages mountain and cloud collection
+- Manages mountain, cloud collection, and bird flock
 
 \`\`\`typescript
 class Scene {
@@ -39,15 +40,17 @@ class Scene {
   ctx: CanvasRenderingContext2D
   mountain: Mountain
   clouds: Cloud[]
+  birds: Bird[] // Phase 7+
   windSpeed: number // Global parameter
+  currentTime: number
   lastTime: number
-  
+
   constructor(canvasElement: HTMLCanvasElement)
-  init(): void // Setup mountain, initial clouds
+  init(): void // Setup mountain, clouds, birds
   update(deltaTime: number): void // Update all objects
-  render(): void // Draw everything
+  render(): void // Draw everything (mountain -> birds -> clouds for depth)
   animate(timestamp: number): void // RequestAnimationFrame loop
-  resize(): void // Handle canvas resize (future)
+  resize(): void // Handle canvas resize (Phase 6)
 }
 \`\`\`
 
@@ -88,26 +91,52 @@ vertices: [
 - Shape definition via Perlin/Simplex noise
 - Morphing over time (noise evolution)
 - Wrapping behavior (teleport to left when exits right)
-- Erasing mountain ink where cloud exists
+- Washing away mountain ink where cloud exists
 
 \`\`\`typescript
 class Cloud {
   position: Vector2 // Absolute canvas coordinates
   velocity: Vector2 // Base velocity (modified by global windSpeed)
-  scale: number // Size multiplier for this cloud
   width: number // Bounding box width
   height: number // Bounding box height
   noiseSeed: Vector3 // Unique offset for this cloud's noise field
   noiseScale: number // How "zoomed in" the noise is
-  timeOffset: number // Phase offset for evolution
-  
+
   constructor(config: CloudConfig)
-  
-  update(deltaTime: number, windSpeed: number, canvasWidth: number): void
-  draw(ctx: CanvasRenderingContext2D, time: number): void
-  
-  // Helper: get alpha value at specific point based on noise
-  private getAlphaAt(x: number, y: number, time: number): number
+
+  update(deltaTime: number, windSpeed: number, canvasWidth: number, canvasHeight: number): void
+  draw(ctx: CanvasRenderingContext2D, time: number, canvasWidth: number): void
+
+  // Helper: get noise value at specific point
+  private getNoiseAt(x: number, y: number, time: number): number
+}
+\`\`\`
+
+#### Bird Class (Phase 7+)
+**Responsibilities:**
+- Position and velocity (flight movement)
+- Visual representation (ink brush style TBD in Phase 7)
+- Flocking behavior (boid algorithm: separation, alignment, cohesion)
+- Boundary handling (wrapping or return behavior TBD)
+- Rendering in black ink
+
+\`\`\`typescript
+class Bird {
+  position: Vector2 // Absolute canvas coordinates
+  velocity: Vector2 // Current flight direction and speed
+  // Visual properties TBD based on chosen aesthetic
+  // Possible: wingspan, body size, orientation angle
+
+  constructor(config: BirdConfig)
+
+  update(deltaTime: number, flock: Bird[], canvasWidth: number, canvasHeight: number): void
+  draw(ctx: CanvasRenderingContext2D): void
+
+  // Boid algorithm components (Phase 9)
+  private separation(neighbors: Bird[]): Vector2
+  private alignment(neighbors: Bird[]): Vector2
+  private cohesion(neighbors: Bird[]): Vector2
+  private getNeighbors(flock: Bird[], radius: number): Bird[]
 }
 \`\`\`
 
@@ -343,28 +372,129 @@ update(deltaTime: number, windSpeed: number, canvasWidth: number): void {
 
 ---
 
-### Phase 5: Multiple Clouds ✋ CHECKPOINT
-**Goal:** Add second cloud, tune composition
+### Phase 5: Multiple Clouds ✅ COMPLETE
+**Goal:** Add multiple clouds, tune composition
 
-1. Add second cloud with different seed/speed
-2. Observe interaction as they pass over mountain
+1. Add 5 moving clouds with randomized properties
+2. Refactor cloud initialization into helper method
+3. Implement canvas-relative positioning for all dimensions
+4. Add debug mode for cloud visualization
+5. Clean up unused code
 
-**Human checkpoint:**
-- How many clouds feel right? (could be 1, could be 3+)
-- Do different speeds create nice rhythm?
-- Does mountain fade in/out convincingly?
+**Status:** Complete - 5 moving clouds with organic flow, fully scalable canvas-relative architecture
 
 ---
 
-### Phase 6: Polish & Controls (Optional)
-**Goal:** Add refinements
+### Phase 6: Mount Fuji & Responsive Canvas ✋ CHECKPOINT
+**Goal:** Implement authentic Mount Fuji geometry and full-window responsive canvas
 
-Possible additions:
-- Wind speed slider UI
-- Add/remove cloud buttons
-- More organic mountain shape (Bezier curves)
-- Subtle variations in cloud density
-- Performance optimization if needed
+#### Subtasks (in order):
+
+**6.1: Responsive Canvas Setup**
+1. Remove fixed canvas dimensions (800x600)
+2. Make canvas fill entire browser window
+3. Implement window resize listener
+4. Update Scene.resize() to handle window dimension changes
+5. Ensure all relative positioning scales correctly with any aspect ratio
+
+**Human checkpoint:**
+- Does canvas fill window correctly?
+- Does resize maintain aspect/positioning?
+
+**6.2: Mount Fuji Geometry Research & Implementation**
+1. Research Mount Fuji's actual geometric profile/silhouette
+2. Document findings (slope angles, proportions, distinctive shape features)
+3. Update Mountain class vertices to match Fuji's profile
+4. Position mountain: center X at ~30% from left, summit at ~60% from top
+5. Extend base below canvas (y > 1.0) to ensure no visible bottom edge
+
+**Human checkpoint:**
+- Does the silhouette look recognizably like Mount Fuji?
+- Is positioning aesthetically pleasing?
+- Does mountain work well with cloud flow?
+
+**6.3: Performance Optimization**
+1. Add performance monitoring (FPS counter, memory usage tracking)
+2. Profile rendering pipeline (identify bottlenecks)
+3. Optimize cloud rendering if needed:
+   - Consider offscreen canvas caching
+   - Adjust CLOUD_SAMPLE_STEP for performance/quality balance
+   - Optimize noise calculation calls
+4. Set performance targets (maintain 60fps, memory constraints)
+5. Test performance across different window sizes
+
+**Human checkpoint:**
+- Are we hitting performance targets?
+- Does animation remain smooth at various window sizes?
+- Any visual quality tradeoffs acceptable?
+
+---
+
+### Phase 7: Single Bird - Visual Design ✋ CHECKPOINT
+**Goal:** Design and implement a single bird's visual appearance
+
+1. Research Japanese ink painting bird styles (Taikan-era aesthetics)
+2. Design bird shape (simple silhouette, brush stroke style, or abstract)
+3. Create Bird class with basic structure
+4. Implement bird rendering (static first - one bird, fixed position)
+5. Tune bird size relative to mountain/canvas
+
+**Human checkpoint - Critical aesthetic decisions:**
+- Does bird style match overall aesthetic?
+- Is bird size/scale appropriate?
+- Does bird integrate well with mountain/clouds visually?
+
+---
+
+### Phase 8: Single Bird Movement ✋ CHECKPOINT
+**Goal:** Implement basic movement for one bird
+
+1. Add position and velocity to Bird class
+2. Implement simple flight path (straight line, arc, or gentle curve)
+3. Add wrapping/looping behavior (what happens when bird exits screen?)
+4. Tune flight speed relative to cloud movement
+
+**Human checkpoint:**
+- Does flight feel natural and meditative?
+- Is speed appropriate relative to clouds?
+- Does movement pattern work aesthetically?
+
+---
+
+### Phase 9: Bird Flocking Behavior ✋ CHECKPOINT
+**Goal:** Implement boid algorithm for realistic flocking
+
+1. Implement boid algorithms (separation, alignment, cohesion)
+2. Add multiple birds (determine count through iteration)
+3. Tune boid parameters for organic flock behavior
+4. Address edge cases (birds exiting screen, returning to view)
+
+**Open questions to resolve during implementation:**
+- How many birds feel right?
+- Should birds avoid mountain or fly through/behind?
+- Should birds interact with clouds visually (depth layering)?
+- Do birds wrap around screen or return naturally?
+
+**Human checkpoint:**
+- Does flock behavior look organic?
+- Is bird count appropriate?
+- Does flock integrate well with scene composition?
+
+---
+
+### Phase 10: Final Polish & Integration ✋ CHECKPOINT
+**Goal:** Refine complete scene with all elements
+
+1. Tune relative speeds (wind, birds, morphing)
+2. Adjust visual hierarchy (mountain, clouds, birds depth)
+3. Final performance check with all elements
+4. Code cleanup and documentation
+5. Optional: Add subtle variations (bird wing flapping animation?)
+
+**Human checkpoint:**
+- Does complete scene feel cohesive?
+- Is the meditative quality maintained?
+- Performance acceptable with all elements?
 
 ---
 
