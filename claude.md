@@ -385,33 +385,35 @@ update(deltaTime: number, windSpeed: number, canvasWidth: number): void {
 
 ---
 
-### Phase 6: Mount Fuji & Responsive Canvas ✋ CHECKPOINT
+### Phase 6: Mount Fuji & Responsive Canvas ✅ COMPLETE
 **Goal:** Implement authentic Mount Fuji geometry and full-window responsive canvas
 
 #### Subtasks (in order):
 
-**6.1: Responsive Canvas Setup**
+**6.1: Responsive Canvas Setup** ✅
 1. Remove fixed canvas dimensions (800x600)
 2. Make canvas fill entire browser window
 3. Implement window resize listener
 4. Update Scene.resize() to handle window dimension changes
 5. Ensure all relative positioning scales correctly with any aspect ratio
 
-**Human checkpoint:**
-- Does canvas fill window correctly?
-- Does resize maintain aspect/positioning?
+**Status:** Complete - Canvas fills window, resizes dynamically, all elements scale correctly
 
-**6.2: Mount Fuji Geometry Research & Implementation**
+**6.2: Mount Fuji Geometry Research & Implementation** ✅
 1. Research Mount Fuji's actual geometric profile/silhouette
 2. Document findings (slope angles, proportions, distinctive shape features)
 3. Update Mountain class vertices to match Fuji's profile
-4. Position mountain: center X at ~30% from left, summit at ~60% from top
+4. Position mountain: center X at ~30% from left, summit at 50% from top
 5. Extend base below canvas (y > 1.0) to ensure no visible bottom edge
 
-**Human checkpoint:**
-- Does the silhouette look recognizably like Mount Fuji?
-- Is positioning aesthetically pleasing?
-- Does mountain work well with cloud flow?
+**Implemented Features:**
+- Authentic two-slope profile: 35° steep upper slopes, 27° gentle lower slopes
+- Flat crater summit (80px fixed width for zoom effect)
+- Aspect ratio correction preserves slope angles at all window sizes
+- Summit positioned at 30% from left, 50% from top (centered vertically)
+- Base extends to y=1.05 for seamless edge
+
+**Status:** Complete - Mount Fuji silhouette accurate, positioning aesthetically pleasing
 
 **6.3: Performance Optimization**
 1. Add performance monitoring (FPS counter, memory usage tracking)

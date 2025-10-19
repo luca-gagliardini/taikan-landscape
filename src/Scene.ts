@@ -1,6 +1,6 @@
 import { Mountain } from './Mountain'
 import { Cloud } from './Cloud'
-import { BACKGROUND_COLOR, CANVAS_WIDTH, CANVAS_HEIGHT, NOISE_SCALE, DEFAULT_WIND_SPEED } from './config'
+import { BACKGROUND_COLOR, NOISE_SCALE, DEFAULT_WIND_SPEED } from './config'
 
 export class Scene {
   canvas: HTMLCanvasElement
@@ -13,8 +13,6 @@ export class Scene {
 
   constructor(canvasElement: HTMLCanvasElement) {
     this.canvas = canvasElement
-    this.canvas.width = CANVAS_WIDTH
-    this.canvas.height = CANVAS_HEIGHT
 
     const ctx = this.canvas.getContext('2d')
     if (!ctx) {
@@ -22,47 +20,57 @@ export class Scene {
     }
     this.ctx = ctx
 
-    this.windSpeed = DEFAULT_WIND_SPEED * this.canvas.width
     this.currentTime = 0
     this.lastTime = 0
 
-    // Initialize with trapezoid mountain shape
-    // Base extends slightly below canvas (1.01 = 1% below) to ensure no gap at bottom
+    // Initialize mountain (will be set by resize())
+    this.mountain = new Mountain([])
+    this.clouds = []
+    this.windSpeed = 0
+
+    // Set initial canvas dimensions and initialize scene
+    this.resize()
+
+    // Add resize listener
+    window.addEventListener('resize', () => this.resize())
+  }
+
+  private updateMountainGeometry(): void {
+    // Mount Fuji geometry - symmetrical trapezoid with two-slope profile
+    // Research: Fuji has steeper slopes near summit (35°) transitioning to gentler slopes at base (27°)
+    // Positioned: summit center at 30% from left, 50% from top
+    const summitCenterX = 0.3   // 30% from left edge
+    const summitY = 0.5         // 50% from top edge (centered vertically)
+    const midY = 0.75           // Transition point between steep and gentle slopes
+    const baseY = 1.05          // Extends below canvas to ensure no visible edge
+
+    // Aspect ratio correction: convert height units to width units
+    // When we calculate slope, we need actual pixel ratios, not relative coords
+    const aspectRatio = this.canvas.height / this.canvas.width
+
+    // Flat summit width (fixed pixel size for zoom effect)
+    // Keeping this constant creates zoom in/out effect as window resizes
+    const summitWidthPixels = 80  // Fixed 80px crater width
+    const summitHalfWidth = (summitWidthPixels / 2) / this.canvas.width  // Convert to relative coords
+
+    // Upper section: steeper slope (35° angle, tan(35°) ≈ 0.70)
+    const upperHeight = midY - summitY  // Height in relative Y coords
+    const upperHeightCorrected = upperHeight * aspectRatio  // Convert to same units as width
+    const midHalfWidth = summitHalfWidth + (upperHeightCorrected / 0.70)
+
+    // Lower section: gentler slope (27° angle, tan(27°) ≈ 0.51)
+    const lowerHeight = baseY - midY
+    const lowerHeightCorrected = lowerHeight * aspectRatio
+    const baseHalfWidth = midHalfWidth + (lowerHeightCorrected / 0.51)
+
     this.mountain = new Mountain([
-      { x: 0.35, y: 0.25 }, // top-left
-      { x: 0.65, y: 0.25 }, // top-right
-      { x: 0.8, y: 1.01 },  // bottom-right (extends below canvas)
-      { x: 0.2, y: 1.01 }   // bottom-left (extends below canvas)
+      { x: summitCenterX - summitHalfWidth, y: summitY },  // top-left (crater left edge)
+      { x: summitCenterX + summitHalfWidth, y: summitY },  // top-right (crater right edge)
+      { x: summitCenterX + midHalfWidth, y: midY },        // mid-right (transition point)
+      { x: summitCenterX + baseHalfWidth, y: baseY },      // bottom-right
+      { x: summitCenterX - baseHalfWidth, y: baseY },      // bottom-left
+      { x: summitCenterX - midHalfWidth, y: midY }         // mid-left (transition point)
     ])
-
-    // Initialize clouds
-    // Phase 4: Clouds move horizontally with wind
-
-    // Static eternal cloud at bottom
-    // Positioned so cloud center Y = canvas bottom (100% height)
-    // Cloud center X = canvas center (50% width)
-    const eternalCloudWidth = this.canvas.width * 1.5 // 1.5x canvas width for good coverage
-    const eternalCloudHeight = this.canvas.width * 0.25 // Height relative to canvas width (increased for thicker cloud)
-
-    // Position is top-left corner of cloud bounding box
-    // To center cloud horizontally: x = canvasCenter - cloudWidth/2
-    // To position cloud center at bottom: y = canvasHeight - cloudHeight/2
-    const eternalCloudX = this.canvas.width * 0.5 - eternalCloudWidth / 2
-    const eternalCloudY = this.canvas.height - eternalCloudHeight / 2
-
-    this.clouds = [
-      // Static eternal cloud at bottom
-      new Cloud({
-        position: { x: eternalCloudX, y: eternalCloudY },
-        velocity: { x: 0, y: 0 }, // No movement - static cloud
-        width: eternalCloudWidth,
-        height: eternalCloudHeight,
-        noiseSeed: { x: 0, y: 0, z: 0 },
-        noiseScale: NOISE_SCALE
-      }),
-      // Moving clouds
-      ...this.createMovingClouds(5)
-    ]
   }
 
   private createMovingClouds(count: number): Cloud[] {
@@ -84,6 +92,39 @@ export class Scene {
         noiseScale: NOISE_SCALE
       })
     })
+  }
+
+  resize(): void {
+    // Update canvas dimensions to match window size
+    this.canvas.width = window.innerWidth
+    this.canvas.height = window.innerHeight
+
+    // Update wind speed based on new canvas width
+    this.windSpeed = DEFAULT_WIND_SPEED * this.canvas.width
+
+    // Recalculate Mount Fuji geometry with correct aspect ratio
+    this.updateMountainGeometry()
+
+    // Reinitialize clouds with new dimensions
+    // Static eternal cloud at bottom
+    const eternalCloudWidth = this.canvas.width * 1.5
+    const eternalCloudHeight = this.canvas.width * 0.25
+    const eternalCloudX = this.canvas.width * 0.5 - eternalCloudWidth / 2
+    const eternalCloudY = this.canvas.height - eternalCloudHeight / 2
+
+    this.clouds = [
+      // Static eternal cloud at bottom
+      new Cloud({
+        position: { x: eternalCloudX, y: eternalCloudY },
+        velocity: { x: 0, y: 0 },
+        width: eternalCloudWidth,
+        height: eternalCloudHeight,
+        noiseSeed: { x: 0, y: 0, z: 0 },
+        noiseScale: NOISE_SCALE
+      }),
+      // Moving clouds
+      ...this.createMovingClouds(5)
+    ]
   }
 
   init(): void {

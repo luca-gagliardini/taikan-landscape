@@ -1,7 +1,5 @@
 // Configuration constants and tunable parameters
 
-export const CANVAS_WIDTH = 800
-export const CANVAS_HEIGHT = 600
 export const BACKGROUND_COLOR = '#F5F5DC' // Beige/faded white
 export const MOUNTAIN_COLOR = '#000000'
 

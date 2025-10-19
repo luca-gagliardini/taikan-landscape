@@ -176,4 +176,65 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Phase 5 checkpoint complete: Multiple clouds with organic flow
 - All positioning and rendering fully scalable to any canvas size
 - Clean codebase with no unused properties or hardcoded pixels
-- Ready for Phase 6: Polish & Controls (optional)
+- Ready for Phase 6: Mount Fuji & Responsive Canvas
+
+---
+
+### Added - Phase 6: Mount Fuji & Responsive Canvas
+
+#### Phase 6.1: Responsive Canvas Setup
+- Removed fixed canvas dimensions (800x600)
+- Canvas now fills entire browser window
+- Implemented window resize listener with automatic scene updates
+
+**Core Implementation:**
+- `src/style.css`: Full viewport styling
+  - Body: 100vw × 100vh with hidden overflow
+  - Canvas: 100% width and height, display block
+  - Removed centered layout and decorative borders
+- `src/config.ts`: Removed `CANVAS_WIDTH` and `CANVAS_HEIGHT` constants
+- `src/Scene.ts`:
+  - Added `resize()` method to handle window dimension changes
+  - Canvas dimensions set to `window.innerWidth` and `window.innerHeight`
+  - Window resize event listener triggers `resize()`
+  - All clouds and wind speed recalculated on resize
+
+#### Phase 6.2: Mount Fuji Geometry Research & Implementation
+- Researched authentic Mount Fuji geometric profile
+- Implemented realistic two-slope mountain geometry
+
+**Research Findings:**
+- Slope angles: 27°-35° (steeper near summit 31°-35°, gentler at base ~27°)
+- Distinctive feature: Flat crater summit (not pointed)
+- Exceptionally symmetrical cone shape
+- Yokoyama Taikan style: Soft ink washes emphasizing gentle, sacred character
+
+**Mountain Geometry:**
+- Summit position: 30% from left, 50% from top (centered vertically)
+- Flat crater summit: Fixed 80px width (creates zoom effect on resize)
+- Two-slope profile with transition at 75% height:
+  - Upper section: Steeper 35° slopes (tan(35°) ≈ 0.70)
+  - Lower section: Gentler 27° slopes (tan(27°) ≈ 0.51)
+- Base extends to y=1.05 (5% below canvas) for seamless edge
+- 6 vertices total: 2 crater edges, 2 mid-transition points, 2 base corners
+
+**Aspect Ratio Correction:**
+- `updateMountainGeometry()` method calculates geometry on resize
+- Aspect ratio correction: `height × (canvas.height / canvas.width)`
+- Converts relative height units to width coordinate space
+- Preserves authentic slope angles across all window sizes and aspect ratios
+- Fixed summit width in pixels creates cinematic zoom effect:
+  - Narrow window: Summit appears larger (zoomed in)
+  - Wide window: Summit appears smaller (zoomed out)
+
+**Core Implementation:**
+- `src/Scene.ts`:
+  - Created `updateMountainGeometry()` method for dynamic geometry calculation
+  - Called from `resize()` to recalculate on window size changes
+  - Removed duplicate mountain initialization from constructor
+
+### Notes
+- Phase 6.1 & 6.2 checkpoint complete: Full-window responsive canvas with authentic Mount Fuji
+- Slope angles geometrically correct at all aspect ratios
+- Fixed-pixel summit creates natural zoom effect
+- Ready for Phase 6.3: Performance Optimization
