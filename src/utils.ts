@@ -1,11 +1,11 @@
 import { createNoise3D } from 'simplex-noise'
-import { BACKGROUND_COLOR, DEBUG_CLOUD_COLOR } from './config'
+import { BACKGROUND_COLOR, DEBUG_MODE, DEBUG_CLOUD_COLOR } from './config'
 
 // Create noise function once and export for reuse
 export const noise3D = createNoise3D()
 
 // Parse cloud color (debug or normal background)
-const cloudColor = DEBUG_CLOUD_COLOR ?? BACKGROUND_COLOR
+const cloudColor = DEBUG_MODE ? DEBUG_CLOUD_COLOR : BACKGROUND_COLOR
 const CLOUD_R = parseInt(cloudColor.slice(1, 3), 16)
 const CLOUD_G = parseInt(cloudColor.slice(3, 5), 16)
 const CLOUD_B = parseInt(cloudColor.slice(5, 7), 16)

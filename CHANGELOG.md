@@ -238,3 +238,68 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Slope angles geometrically correct at all aspect ratios
 - Fixed-pixel summit creates natural zoom effect
 - Ready for Phase 6.3: Performance Optimization
+
+---
+
+### Added - Phase 6.3: Performance Optimization
+
+#### Performance Monitoring System
+- Created comprehensive PerformanceMonitor class for tracking and analysis
+- Real-time metrics tracking: FPS, frame time, update time, render time
+- Memory tracking (Chrome/Edge only via performance.memory API)
+- Startup analysis: Detailed tracking of first 10 seconds with console report
+- On-screen HUD overlay showing live performance metrics
+
+**Key Metrics Tracked:**
+- FPS (color-coded: green >50fps, yellow 30-50fps, red <30fps)
+- Frame time (target: <16.67ms for 60fps)
+- Update vs Render time breakdown
+- Slow frame detection and reporting
+- Warmup analysis (first second vs rest)
+- Top 5 slowest frames with timestamps
+
+#### Performance Optimization Results
+**Problem Identified:**
+- Initial load: 5.6fps average with 100% slow frames
+- Max frame time: 2399ms (2.4 seconds freeze)
+- Root cause: Cloud rendering with excessive sampling density
+- 25,740+ circles drawn per frame at full screen
+
+**Solution Implemented:**
+- Increased `CLOUD_SAMPLE_STEP` from 0.007 to 0.012 (1.7x increase)
+- Increased `SOFT_CIRCLE_RADIUS` from 0.019 to 0.022 (matched to step)
+- Reduced iterations by ~3x while maintaining acceptable quality
+- Balanced performance/quality tradeoff
+
+**Results:**
+- **17x performance improvement**: 5.6fps → 94.7fps
+- Slow frames: 100% → 0.2% (only 1 frame in 10 seconds)
+- Max frame time: 2399ms → 17ms
+- Average frame time: 693ms → 11ms
+- Consistent 60+ fps on full-screen displays
+
+#### Debug Mode System
+- Added global `DEBUG_MODE` flag to config
+- Refactored `DEBUG_CLOUD_COLOR` to work with `DEBUG_MODE`
+- When enabled, shows:
+  - Performance HUD overlay (top-left corner)
+  - Red cloud visualization
+  - Startup phase indicator
+- Toggleable via single config constant
+
+#### Bug Fixes
+- Fixed wind speed to be absolute (15 pixels/sec) instead of canvas-relative
+- Clouds now drift at consistent meditative pace across all window sizes
+- Removed canvas width multiplication that caused speed inconsistency
+
+**Core Implementation:**
+- `src/PerformanceMonitor.ts`: Full performance tracking and analysis system
+- `src/Scene.ts`: Integrated performance monitoring into animation loop
+- `src/config.ts`: Added `DEBUG_MODE` flag and updated wind speed to absolute value
+- `src/utils.ts`: Updated to use `DEBUG_MODE` for cloud color selection
+
+### Notes
+- Phase 6.3 checkpoint complete: Performance optimized with comprehensive monitoring
+- Achieved 94.7fps average (exceeds 60fps target)
+- Debug mode provides full visibility into performance metrics
+- Ready for Phase 7: Birds

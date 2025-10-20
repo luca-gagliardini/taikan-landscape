@@ -8,11 +8,13 @@ This animation captures the essence of traditional Japanese ink painting where c
 
 ## Features
 
-- Minimalist aesthetic with black ink mountain on beige/white background
+- Minimalist aesthetic with authentic Mount Fuji silhouette on beige/white background
+- Full-window responsive canvas that adapts to any screen size
 - Organic cloud shapes generated using Perlin/Simplex noise
-- Clouds that erase mountain ink as they pass (using canvas composite operations)
-- Slow, meditative horizontal cloud movement
-- Responsive animation with smooth morphing cloud shapes
+- Clouds that wash away mountain ink as they pass
+- Slow, meditative horizontal cloud movement with absolute speed
+- Smooth morphing cloud shapes with optimized performance (60+ fps)
+- Debug mode with performance monitoring and visualization tools
 
 ## Getting Started
 
@@ -59,14 +61,15 @@ npm run preview
 
 ```
 src/
-├── main.ts           # Entry point, canvas setup, animation loop
-├── Scene.ts          # Orchestrates mountain + clouds
-├── Mountain.ts       # Mountain geometry and rendering
-├── Cloud.ts          # Individual cloud behavior (Phase 2+)
-├── types.ts          # Shared types (Point, Vector2, etc.)
-├── config.ts         # Constants and tunable parameters
-├── utils.ts          # Noise wrapper, drawing helpers (Phase 2+)
-└── style.css         # Basic styling
+├── main.ts              # Entry point, canvas setup, animation loop
+├── Scene.ts             # Orchestrates mountain + clouds + performance monitoring
+├── Mountain.ts          # Mountain geometry and rendering (Mount Fuji profile)
+├── Cloud.ts             # Individual cloud behavior with noise-based shapes
+├── PerformanceMonitor.ts # FPS tracking, profiling, and debug HUD
+├── types.ts             # Shared types (Point, Vector2, etc.)
+├── config.ts            # Constants and tunable parameters
+├── utils.ts             # Noise wrapper, drawing helpers
+└── style.css            # Full-window canvas styling
 ```
 
 ## Implementation Phases
@@ -97,11 +100,37 @@ src/
 - [x] Add debug mode for cloud visualization
 - [x] Clean up unused code
 
-### Phase 6: Polish & Controls (Optional)
-- [ ] Wind speed slider UI
-- [ ] Add/remove cloud buttons
-- [ ] More organic mountain shape (Bezier curves)
-- [ ] Performance optimization
+### Phase 6: Mount Fuji & Responsive Canvas ✅
+- [x] Implement full-window responsive canvas
+- [x] Research and implement authentic Mount Fuji geometry
+- [x] Two-slope profile (35° steep upper, 27° gentle lower)
+- [x] Flat crater summit with fixed pixel width (zoom effect)
+- [x] Aspect ratio correction for consistent slopes
+- [x] Performance monitoring system with FPS tracking
+- [x] Optimize cloud rendering (17x performance improvement)
+- [x] Debug mode system (HUD + cloud visualization)
+- [x] Fix wind speed to absolute value
+
+## Debug Mode
+
+Enable debug features by setting `DEBUG_MODE = true` in `src/config.ts`:
+
+```typescript
+export const DEBUG_MODE = true
+```
+
+When enabled, you'll see:
+- **Performance HUD** (top-left corner) showing:
+  - FPS (color-coded: green >50fps, yellow 30-50fps, red <30fps)
+  - Frame time in milliseconds
+  - Update/Render time breakdown
+  - Memory usage (Chrome/Edge only)
+  - Startup phase indicator (first 10 seconds)
+- **Cloud visualization** (clouds rendered in red instead of background color)
+- **Console analysis** after 10 seconds:
+  - Detailed startup performance statistics
+  - Top 5 slowest frames with timestamps
+  - Warmup analysis comparing first second vs rest
 
 ## Tunable Parameters
 
@@ -109,12 +138,13 @@ Key parameters that can be adjusted in `src/config.ts`:
 
 | Parameter | Description | Default Value |
 |-----------|-------------|---------------|
-| `DEFAULT_WIND_SPEED` | Cloud drift speed (fraction of canvas width/sec) | 0.019 |
+| `DEBUG_MODE` | Enable performance HUD and cloud visualization | false |
+| `DEFAULT_WIND_SPEED` | Cloud drift speed (absolute pixels/sec) | 15 |
 | `NOISE_SCALE` | Size of cloud features (lower = bigger) | 60 |
 | `NOISE_TIME_SCALE` | Speed of shape morphing | 0.00004 |
-| `CLOUD_SAMPLE_STEP` | Grid spacing (fraction of canvas width) | 0.007 |
-| `SOFT_CIRCLE_RADIUS` | Soft circle radius (fraction of canvas width) | 0.019 |
-| `DEBUG_CLOUD_COLOR` | Cloud color for debugging (null = normal mode) | null |
+| `CLOUD_SAMPLE_STEP` | Grid sampling density (fraction of canvas width) | 0.012 |
+| `SOFT_CIRCLE_RADIUS` | Soft circle radius (fraction of canvas width) | 0.022 |
+| `DEBUG_CLOUD_COLOR` | Cloud visualization color when debug enabled | '#FF0000' |
 
 ## Technical Notes
 

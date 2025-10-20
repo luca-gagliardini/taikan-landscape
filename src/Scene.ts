@@ -1,6 +1,7 @@
 import { Mountain } from './Mountain'
 import { Cloud } from './Cloud'
-import { BACKGROUND_COLOR, NOISE_SCALE, DEFAULT_WIND_SPEED } from './config'
+import { PerformanceMonitor } from './PerformanceMonitor'
+import { BACKGROUND_COLOR, NOISE_SCALE, DEFAULT_WIND_SPEED, DEBUG_MODE } from './config'
 
 export class Scene {
   canvas: HTMLCanvasElement
@@ -10,6 +11,7 @@ export class Scene {
   windSpeed: number
   currentTime: number
   lastTime: number
+  performanceMonitor: PerformanceMonitor
 
   constructor(canvasElement: HTMLCanvasElement) {
     this.canvas = canvasElement
@@ -22,6 +24,9 @@ export class Scene {
 
     this.currentTime = 0
     this.lastTime = 0
+
+    // Initialize performance monitoring
+    this.performanceMonitor = new PerformanceMonitor()
 
     // Initialize mountain (will be set by resize())
     this.mountain = new Mountain([])
@@ -99,8 +104,8 @@ export class Scene {
     this.canvas.width = window.innerWidth
     this.canvas.height = window.innerHeight
 
-    // Update wind speed based on new canvas width
-    this.windSpeed = DEFAULT_WIND_SPEED * this.canvas.width
+    // Set wind speed (now absolute pixels/sec, not canvas-relative)
+    this.windSpeed = DEFAULT_WIND_SPEED
 
     // Recalculate Mount Fuji geometry with correct aspect ratio
     this.updateMountainGeometry()
@@ -133,13 +138,19 @@ export class Scene {
   }
 
   update(deltaTime: number): void {
+    this.performanceMonitor.startUpdate()
+
     // Update all clouds with wind speed and canvas dimensions for wrapping
     for (const cloud of this.clouds) {
       cloud.update(deltaTime, this.windSpeed, this.canvas.width, this.canvas.height)
     }
+
+    this.performanceMonitor.endUpdate()
   }
 
   render(): void {
+    this.performanceMonitor.startRender()
+
     const { width, height } = this.canvas
 
     // 1. Clear canvas with faded white background
@@ -156,9 +167,18 @@ export class Scene {
     for (const cloud of this.clouds) {
       cloud.draw(this.ctx, this.currentTime, this.canvas.width)
     }
+
+    this.performanceMonitor.endRender()
+
+    // 4. Draw performance HUD if debug mode is enabled
+    if (DEBUG_MODE) {
+      this.performanceMonitor.drawHUD(this.ctx)
+    }
   }
 
   animate(timestamp: number): void {
+    this.performanceMonitor.startFrame()
+
     // Calculate delta time in seconds
     const deltaTime = this.lastTime ? (timestamp - this.lastTime) / 1000 : 0
     this.lastTime = timestamp
@@ -168,6 +188,8 @@ export class Scene {
 
     this.update(deltaTime)
     this.render()
+
+    this.performanceMonitor.endFrame()
 
     // Continue animation loop
     requestAnimationFrame((t) => this.animate(t))
