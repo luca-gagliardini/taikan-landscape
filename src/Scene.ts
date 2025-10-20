@@ -9,7 +9,7 @@ export class Scene {
   ctx: CanvasRenderingContext2D
   mountain: Mountain
   clouds: Cloud[]
-  bird: Bird | null
+  birds: Bird[]
   windSpeed: number
   currentTime: number
   lastTime: number
@@ -33,7 +33,7 @@ export class Scene {
     // Initialize mountain (will be set by resize())
     this.mountain = new Mountain([])
     this.clouds = []
-    this.bird = null
+    this.birds = []
     this.windSpeed = 0
 
     // Set initial canvas dimensions and initialize scene
@@ -134,11 +134,14 @@ export class Scene {
       ...this.createMovingClouds(5)
     ]
 
-    // Initialize static bird (for visual design iteration)
-    this.bird = new Bird({
-      position: { x: 0.5, y: 0.4 }, // Center-ish, above mountain summit
+    // Initialize flock of 15 birds with random starting positions
+    this.birds = Array.from({ length: 15 }, () => new Bird({
+      position: {
+        x: 0.2 + Math.random() * 0.6, // Random X between 20-80%
+        y: 0.2 + Math.random() * 0.4  // Random Y between 20-60%
+      },
       scale: 1.0
-    })
+    }))
   }
 
   init(): void {
@@ -154,9 +157,14 @@ export class Scene {
       cloud.update(deltaTime, this.windSpeed, this.canvas.width, this.canvas.height)
     }
 
-    // Update bird (pass mountain for collision detection)
-    if (this.bird) {
-      this.bird.update(deltaTime, this.canvas.width, this.canvas.height, this.mountain)
+    // Apply flocking behavior to all birds
+    for (const bird of this.birds) {
+      bird.applyFlocking(this.birds)
+    }
+
+    // Update all birds (pass mountain for collision detection)
+    for (const bird of this.birds) {
+      bird.update(deltaTime, this.canvas.width, this.canvas.height, this.mountain)
     }
 
     this.performanceMonitor.endUpdate()
@@ -175,9 +183,9 @@ export class Scene {
     this.ctx.globalCompositeOperation = 'source-over'
     this.mountain.draw(this.ctx, width, height)
 
-    // 3. Draw bird (before clouds, so clouds can obscure it)
-    if (this.bird) {
-      this.bird.draw(this.ctx, width, height)
+    // 3. Draw all birds (before clouds, so clouds can obscure them)
+    for (const bird of this.birds) {
+      bird.draw(this.ctx, width, height)
     }
 
     // 4. Draw clouds as background-colored shapes ON TOP of mountain
