@@ -154,6 +154,11 @@ export class Scene {
       cloud.update(deltaTime, this.windSpeed, this.canvas.width, this.canvas.height)
     }
 
+    // Update bird (pass mountain for collision detection)
+    if (this.bird) {
+      this.bird.update(deltaTime, this.canvas.width, this.canvas.height, this.mountain)
+    }
+
     this.performanceMonitor.endUpdate()
   }
 

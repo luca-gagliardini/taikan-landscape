@@ -36,4 +36,27 @@ export class Mountain {
       y: point.y * height
     }
   }
+
+  // Check if a point (in relative coordinates 0-1) is inside the mountain polygon
+  isPointInside(point: Point): boolean {
+    if (this.vertices.length < 3) return false
+
+    // Ray casting algorithm for point-in-polygon test
+    let inside = false
+    const x = point.x
+    const y = point.y
+
+    for (let i = 0, j = this.vertices.length - 1; i < this.vertices.length; j = i++) {
+      const xi = this.vertices[i].x
+      const yi = this.vertices[i].y
+      const xj = this.vertices[j].x
+      const yj = this.vertices[j].y
+
+      const intersect = ((yi > y) !== (yj > y)) &&
+                        (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+      if (intersect) inside = !inside
+    }
+
+    return inside
+  }
 }
