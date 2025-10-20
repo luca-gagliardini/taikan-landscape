@@ -1,5 +1,6 @@
 import { Mountain } from './Mountain'
 import { Cloud } from './Cloud'
+import { Bird } from './Bird'
 import { PerformanceMonitor } from './PerformanceMonitor'
 import { BACKGROUND_COLOR, NOISE_SCALE, DEFAULT_WIND_SPEED, DEBUG_MODE } from './config'
 
@@ -8,6 +9,7 @@ export class Scene {
   ctx: CanvasRenderingContext2D
   mountain: Mountain
   clouds: Cloud[]
+  bird: Bird | null
   windSpeed: number
   currentTime: number
   lastTime: number
@@ -31,6 +33,7 @@ export class Scene {
     // Initialize mountain (will be set by resize())
     this.mountain = new Mountain([])
     this.clouds = []
+    this.bird = null
     this.windSpeed = 0
 
     // Set initial canvas dimensions and initialize scene
@@ -130,6 +133,12 @@ export class Scene {
       // Moving clouds
       ...this.createMovingClouds(5)
     ]
+
+    // Initialize static bird (for visual design iteration)
+    this.bird = new Bird({
+      position: { x: 0.5, y: 0.4 }, // Center-ish, above mountain summit
+      scale: 1.0
+    })
   }
 
   init(): void {
@@ -161,7 +170,12 @@ export class Scene {
     this.ctx.globalCompositeOperation = 'source-over'
     this.mountain.draw(this.ctx, width, height)
 
-    // 3. Draw clouds as background-colored shapes ON TOP of mountain
+    // 3. Draw bird (before clouds, so clouds can obscure it)
+    if (this.bird) {
+      this.bird.draw(this.ctx, width, height)
+    }
+
+    // 4. Draw clouds as background-colored shapes ON TOP of mountain
     // This "washes away" the mountain ink by painting over it with background color
     this.ctx.globalCompositeOperation = 'source-over'
     for (const cloud of this.clouds) {
@@ -170,7 +184,7 @@ export class Scene {
 
     this.performanceMonitor.endRender()
 
-    // 4. Draw performance HUD if debug mode is enabled
+    // 5. Draw performance HUD if debug mode is enabled
     if (DEBUG_MODE) {
       this.performanceMonitor.drawHUD(this.ctx)
     }
