@@ -1,13 +1,27 @@
 import { Mountain } from './Mountain'
 import { Cloud } from './Cloud'
 import { Bird } from './Bird'
+import { Sun } from './Sun'
 import { PerformanceMonitor } from './PerformanceMonitor'
-import { BACKGROUND_COLOR, NOISE_SCALE, DEFAULT_WIND_SPEED, DEBUG_MODE } from './config'
+import {
+  BACKGROUND_COLOR,
+  NOISE_SCALE,
+  DEFAULT_WIND_SPEED,
+  DEBUG_MODE,
+  MOUNTAIN_SUMMIT_CENTER_X,
+  MOUNTAIN_SUMMIT_Y,
+  MOUNTAIN_MID_Y,
+  MOUNTAIN_BASE_Y,
+  MOUNTAIN_SUMMIT_WIDTH_PX,
+  MOUNTAIN_UPPER_SLOPE_ANGLE,
+  MOUNTAIN_LOWER_SLOPE_ANGLE
+} from './config'
 
 export class Scene {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   mountain: Mountain
+  sun: Sun
   clouds: Cloud[]
   birds: Bird[]
   windSpeed: number
@@ -32,6 +46,7 @@ export class Scene {
 
     // Initialize mountain (will be set by resize())
     this.mountain = new Mountain([])
+    this.sun = new Sun()
     this.clouds = []
     this.birds = []
     this.windSpeed = 0
@@ -46,11 +61,10 @@ export class Scene {
   private updateMountainGeometry(): void {
     // Mount Fuji geometry - symmetrical trapezoid with two-slope profile
     // Research: Fuji has steeper slopes near summit (35°) transitioning to gentler slopes at base (27°)
-    // Positioned: summit center at 30% from left, 50% from top
-    const summitCenterX = 0.3   // 30% from left edge
-    const summitY = 0.5         // 50% from top edge (centered vertically)
-    const midY = 0.75           // Transition point between steep and gentle slopes
-    const baseY = 1.05          // Extends below canvas to ensure no visible edge
+    const summitCenterX = MOUNTAIN_SUMMIT_CENTER_X
+    const summitY = MOUNTAIN_SUMMIT_Y
+    const midY = MOUNTAIN_MID_Y
+    const baseY = MOUNTAIN_BASE_Y
 
     // Aspect ratio correction: convert height units to width units
     // When we calculate slope, we need actual pixel ratios, not relative coords
@@ -58,18 +72,18 @@ export class Scene {
 
     // Flat summit width (fixed pixel size for zoom effect)
     // Keeping this constant creates zoom in/out effect as window resizes
-    const summitWidthPixels = 80  // Fixed 80px crater width
+    const summitWidthPixels = MOUNTAIN_SUMMIT_WIDTH_PX
     const summitHalfWidth = (summitWidthPixels / 2) / this.canvas.width  // Convert to relative coords
 
-    // Upper section: steeper slope (35° angle, tan(35°) ≈ 0.70)
+    // Upper section: steeper slope
     const upperHeight = midY - summitY  // Height in relative Y coords
     const upperHeightCorrected = upperHeight * aspectRatio  // Convert to same units as width
-    const midHalfWidth = summitHalfWidth + (upperHeightCorrected / 0.70)
+    const midHalfWidth = summitHalfWidth + (upperHeightCorrected / MOUNTAIN_UPPER_SLOPE_ANGLE)
 
-    // Lower section: gentler slope (27° angle, tan(27°) ≈ 0.51)
+    // Lower section: gentler slope
     const lowerHeight = baseY - midY
     const lowerHeightCorrected = lowerHeight * aspectRatio
-    const baseHalfWidth = midHalfWidth + (lowerHeightCorrected / 0.51)
+    const baseHalfWidth = midHalfWidth + (lowerHeightCorrected / MOUNTAIN_LOWER_SLOPE_ANGLE)
 
     this.mountain = new Mountain([
       { x: summitCenterX - summitHalfWidth, y: summitY },  // top-left (crater left edge)
@@ -179,7 +193,11 @@ export class Scene {
     this.ctx.fillStyle = BACKGROUND_COLOR
     this.ctx.fillRect(0, 0, width, height)
 
-    // 2. Draw mountain in black ink
+    // 2. Draw sun (behind everything)
+    this.ctx.globalCompositeOperation = 'source-over'
+    this.sun.draw(this.ctx, width)
+
+    // 3. Draw mountain in black ink
     this.ctx.globalCompositeOperation = 'source-over'
     this.mountain.draw(this.ctx, width, height)
 
