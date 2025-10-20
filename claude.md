@@ -441,55 +441,63 @@ update(deltaTime: number, windSpeed: number, canvasWidth: number): void {
 
 ---
 
-### Phase 7: Single Bird - Visual Design ✋ CHECKPOINT
+### Phase 7: Single Bird - Visual Design ✅ COMPLETE
 **Goal:** Design and implement a single bird's visual appearance
 
-1. Research Japanese ink painting bird styles (Taikan-era aesthetics)
-2. Design bird shape (simple silhouette, brush stroke style, or abstract)
-3. Create Bird class with basic structure
-4. Implement bird rendering (static first - one bird, fixed position)
-5. Tune bird size relative to mountain/canvas
+**Implemented:**
+- Two-triangle wing design inspired by Yokoyama Taikan
+- Vertical body line connecting wings (head to tail)
+- Absolute pixel sizing (20px wingspan) for consistency
+- Canvas-relative positioning
+- Rendered behind clouds for proper depth
 
-**Human checkpoint - Critical aesthetic decisions:**
-- Does bird style match overall aesthetic?
-- Is bird size/scale appropriate?
-- Does bird integrate well with mountain/clouds visually?
+**Decisions Made:**
+- Bird style: Minimalist ink brush (two thin triangles + line)
+- Size: 20px wingspan (very small, meditative)
+- Integration: Rendered before clouds, obscured naturally
 
 ---
 
-### Phase 8: Single Bird Movement ✋ CHECKPOINT
+### Phase 8: Single Bird Movement ✅ COMPLETE
 **Goal:** Implement basic movement for one bird
 
-1. Add position and velocity to Bird class
-2. Implement simple flight path (straight line, arc, or gentle curve)
-3. Add wrapping/looping behavior (what happens when bird exits screen?)
-4. Tune flight speed relative to cloud movement
+**Implemented:**
+- Rotation to face movement direction
+- Random target direction changes (10-20 sec intervals, ±30°)
+- Smooth inertia-based turning (20-70% turn rate)
+- Gravity-like physics (speed varies 0.035-0.07 based on angle)
+- Edge avoidance (window boundaries + mountain collision)
+- Mountain escape: steer upward with speed boost
 
-**Human checkpoint:**
-- Does flight feel natural and meditative?
-- Is speed appropriate relative to clouds?
-- Does movement pattern work aesthetically?
+**Decisions Made:**
+- Flight feels natural with gravity simulation
+- Speed balanced relative to clouds
+- Edge avoidance prevents soft-locks
 
 ---
 
-### Phase 9: Bird Flocking Behavior ✋ CHECKPOINT
+### Phase 9: Bird Flocking Behavior ✅ COMPLETE
 **Goal:** Implement boid algorithm for realistic flocking
 
-1. Implement boid algorithms (separation, alignment, cohesion)
-2. Add multiple birds (determine count through iteration)
-3. Tune boid parameters for organic flock behavior
-4. Address edge cases (birds exiting screen, returning to view)
+**Implemented:**
+- Distance-based dynamic weighting for boid algorithms:
+  - Separation (0.03): Cubic falloff, strongest when very close
+  - Alignment (0.06): Bell curve, peaks at mid-distance
+  - Cohesion (0.15): Quadratic increase, stronger when far
+- 15 birds in flock
+- Mountain avoidance integrated with flocking
+- Config-driven architecture (all parameters in config.ts)
 
-**Open questions to resolve during implementation:**
-- How many birds feel right?
-- Should birds avoid mountain or fly through/behind?
-- Should birds interact with clouds visually (depth layering)?
-- Do birds wrap around screen or return naturally?
+**Decisions Made:**
+- Bird count: 15 (balanced visibility and performance)
+- Birds avoid mountain by steering upward
+- Clouds obscure birds (proper depth layering)
+- Flocking parameters tuned for smooth, meditative movement
 
-**Human checkpoint:**
-- Does flock behavior look organic?
-- Is bird count appropriate?
-- Does flock integrate well with scene composition?
+**Code Refactoring:**
+- Extracted all magic numbers to config.ts
+- Centralized 18 bird behavior constants
+- Clean, maintainable architecture
 
 ---
 
