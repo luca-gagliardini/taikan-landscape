@@ -517,6 +517,40 @@ update(deltaTime: number, windSpeed: number, canvasWidth: number): void {
 
 ---
 
+## Current Known Issues
+
+### Issue 1: Cloud Rendering Bug on Narrow Windows
+**Status:** 🔴 TODO
+**Description:** When the window width is narrow, the ellipse/circle shapes that make up clouds become clearly visible with visible gaps between them and the noise pattern. This creates an unnatural, artificial appearance instead of the organic cloud effect.
+
+**Possible causes:**
+- CLOUD_SAMPLE_STEP might be too large relative to narrow window dimensions
+- SOFT_CIRCLE_RADIUS may need dynamic scaling based on window width
+- Aspect ratio changes might affect noise sampling density
+
+**Next steps:**
+- Test cloud rendering at various narrow window widths
+- Investigate if ellipse gap issue is related to sampling step vs circle radius ratio
+- Consider making SOFT_CIRCLE_RADIUS or CLOUD_SAMPLE_STEP responsive to window dimensions
+
+---
+
+### Issue 2: Bird Orientation Bug (Drifting Sideways)
+**Status:** 🔴 TODO
+**Description:** Birds sometimes drift sideways instead of flying head-first with their body properly aligned to their velocity vector. The visual orientation doesn't always match the movement direction.
+
+**Possible causes:**
+- Rotation calculation in Bird.draw() may not be synced with velocity changes
+- Turn rate smoothing might create visual lag between velocity and rendered orientation
+- Flocking forces might update velocity without properly updating visual orientation
+
+**Next steps:**
+- Review Bird.draw() rotation calculation
+- Ensure rotation angle is always derived from current velocity vector
+- Check if there's a mismatch between physics update and visual update timing
+
+---
+
 ## Key Tunable Parameters (Summary)
 
 These will need human judgment to dial in:

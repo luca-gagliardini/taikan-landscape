@@ -2,6 +2,21 @@
 
 export const BACKGROUND_COLOR = '#F5F5DC' // Beige/faded white
 export const MOUNTAIN_COLOR = '#000000'
+export const SUN_COLOR = '#C1272D' // Japanese red (traditional Taikan red)
+
+// Sun parameters
+export const SUN_RADIUS = 60 // Sun radius in pixels
+export const SUN_OFFSET_FROM_TOP = 90 // Distance from top edge in pixels
+export const SUN_OFFSET_FROM_RIGHT = 90 // Distance from right edge in pixels
+
+// Mountain (Mount Fuji) geometry parameters
+export const MOUNTAIN_SUMMIT_CENTER_X = 0.2 // Summit center position (0-1, from left edge)
+export const MOUNTAIN_SUMMIT_Y = 0.6 // Summit vertical position (0-1, from top edge)
+export const MOUNTAIN_MID_Y = 0.75 // Transition point between steep and gentle slopes
+export const MOUNTAIN_BASE_Y = 1.05 // Base extends below canvas to ensure no visible edge
+export const MOUNTAIN_SUMMIT_WIDTH_PX = 80 // Fixed pixel width of crater (creates zoom effect)
+export const MOUNTAIN_UPPER_SLOPE_ANGLE = 0.70 // tan(35°) - steep upper slope
+export const MOUNTAIN_LOWER_SLOPE_ANGLE = 0.51 // tan(27°) - gentle lower slope
 
 // Debug mode - enables performance HUD and cloud visualization
 export const DEBUG_MODE = false // Set to true to enable debug features
